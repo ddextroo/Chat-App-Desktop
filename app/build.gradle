@@ -13,6 +13,7 @@ plugins {
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    google()
 }
 
 dependencies {
@@ -23,6 +24,17 @@ dependencies {
 
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'com.google.firebase:firebase-auth:21.0.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.4.0'
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.20.0'
+    implementation 'com.google.api-client:google-api-client:2.0.0'
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.swinglabs:swingx:1.6.1'
+    implementation 'com.google.firebase:firebase-admin:9.1.1'
+    implementation 'com.formdev:flatlaf:3.1'
+    implementation 'com.kenai.nbpwr:org-jdesktop-animation-timing:1.0-201002281504'
+    implementation 'com.miglayout:miglayout:3.7.4'
+    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.34.1'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

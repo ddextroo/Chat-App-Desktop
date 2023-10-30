@@ -3,12 +3,31 @@
  */
 package Chatapp;
 
+import com.formdev.flatlaf.FlatLightLaf;
+import java.util.HashMap;
+import javax.swing.UIManager;
+import backend.pushValueExisting;
+import pages.auth;
+
 public class App {
+
     public String getGreeting() {
-        return "Hello World!";
+        return "welkam back ah";
     }
 
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        HashMap<String, Object> m;
+        pushValueExisting v;
+       // System.out.println(new App().getGreeting());
+        FlatLightLaf.install();
+        FlatLightLaf.setup();
+        new auth().setVisible(true);
+        
+
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (Exception ex) {
+            System.err.println("Failed to initialize LaF");
+        }
     }
 }
