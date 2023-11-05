@@ -362,10 +362,9 @@ public class auth extends javax.swing.JFrame {
                 try {
                     boolean authenticated = false;
                     authenticated = new signup(email_address, password).signUp();
-
+                        
                     if (authenticated) {
-                        dispose_page();
-
+                        email.setText("");
                     }
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(auth.class.getName()).log(Level.SEVERE, null, ex);

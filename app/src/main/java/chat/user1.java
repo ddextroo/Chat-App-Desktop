@@ -10,6 +10,9 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.RoundRectangle2D;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 /**
  *
@@ -24,6 +27,10 @@ public class user1 extends javax.swing.JLayeredPane {
         initComponents();
         setOpaque(false);
         text1.setText(text);
+        StyledDocument style = text1.getStyledDocument();
+        SimpleAttributeSet align = new SimpleAttributeSet();
+        StyleConstants.setAlignment(align, StyleConstants.ALIGN_RIGHT);
+        style.setParagraphAttributes(0, style.getLength(), align, false);
     }
 
     @Override

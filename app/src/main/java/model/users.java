@@ -4,11 +4,20 @@
  */
 package model;
 
+import backend.getUID;
+import chat.chatDetails;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import design.fontInit;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import javax.swing.SwingUtilities;
+import pages.chat;
 
 /**
  *
@@ -16,34 +25,34 @@ import java.awt.event.MouseListener;
  */
 public class users extends javax.swing.JPanel {
 
-    /**
-     * Creates new form users
-     */
-    public users(String name) {
+    private String name;
+    private String uid;
+    private DatabaseReference dbRef;
+    
+
+    public users(String name, String uid) {
+        this.uid = uid;
         initComponents();
         jLabel1.setText(name);
         new fontInit().initialize();
         fontInit();
         mouse();
         jPanel1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-
     }
 
     private void mouse() {
         jPanel1.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                System.out.println("Mouse Clicked");
+                ((chat) SwingUtilities.getWindowAncestor(jPanel1)).handleData(uid);
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                jPanel1.setBackground(new Color(34, 167, 240, 50));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                jPanel1.setBackground(new Color(254, 254, 254));
             }
 
             @Override
@@ -105,7 +114,7 @@ public class users extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
+    public javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
     private void fontInit() {
         jLabel1.setFont(new Font("Montserrat Regular", Font.PLAIN, 14));

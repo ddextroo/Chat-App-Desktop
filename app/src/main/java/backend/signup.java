@@ -69,7 +69,7 @@ public class signup {
             m.put("pass", password1);
             m.put("uid", uid);
             v.pushData("users", m);
-            JOptionPane.showMessageDialog(null, "Success: Account Created Successfully", "Welcome to LibraTech", INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Success: Account Created Successfully. Please login again", "Welcome to LibraTech", INFORMATION_MESSAGE);
             return true;
 
         } catch (FirebaseAuthException e) {

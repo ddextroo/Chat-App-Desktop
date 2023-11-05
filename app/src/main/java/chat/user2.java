@@ -8,6 +8,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 /**
  *
@@ -22,7 +25,10 @@ public class user2 extends javax.swing.JLayeredPane {
         initComponents();
         setOpaque(false);
         text1.setText(text);
-        
+        StyledDocument style = text1.getStyledDocument();
+        SimpleAttributeSet align = new SimpleAttributeSet();
+        StyleConstants.setAlignment(align, StyleConstants.ALIGN_LEFT);
+        style.setParagraphAttributes(0, style.getLength(), align, false);
     }
 
     @Override
@@ -50,7 +56,6 @@ public class user2 extends javax.swing.JLayeredPane {
 
         text1.setEditable(false);
         text1.setBackground(new java.awt.Color(255, 255, 255));
-        text1.setBorder(null);
         text1.setForeground(new java.awt.Color(58, 58, 58));
 
         setLayer(text1, javax.swing.JLayeredPane.DEFAULT_LAYER);

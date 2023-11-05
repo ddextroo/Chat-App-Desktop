@@ -7,7 +7,10 @@ package pages;
 import backend.EmailValidation;
 import backend.aes;
 import backend.firebaseInit;
+import backend.getUID;
+import backend.pushValue;
 import backend.pushValueExisting;
+import chat.chatDetails;
 import chat.user1;
 import chat.user2;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,6 +26,7 @@ import design.fontInit;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
@@ -34,6 +38,7 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JScrollBar;
 import model.users;
 import net.miginfocom.swing.MigLayout;
 
@@ -48,8 +53,8 @@ public class chat extends javax.swing.JFrame {
      */
     private HashMap<String, Object> m;
     private DatabaseReference dbRef;
-    private DatabaseReference dbRef1;
-
+    private DatabaseReference user1;
+    private DatabaseReference user2;
     private pushValueExisting v;
     boolean authh = false;
     EmailValidation validate = new EmailValidation();
@@ -60,14 +65,19 @@ public class chat extends javax.swing.JFrame {
     private String regex = "^(.*?)@";
     private Pattern pattern = Pattern.compile(regex);
     private Matcher matcher;
+    public String uid;
+    private JScrollBar verticalScrollBar;
 
     public chat() {
+        this.uid = uid;
         initComponents();
+
         new firebaseInit().initFirebase();
         setLocationRelativeTo(null);
         new fontInit().initialize();
         this.firebaseAuth = FirebaseAuth.getInstance();
         this.dbRefUsers = FirebaseDatabase.getInstance().getReference("users");
+        verticalScrollBar = jScrollPane3.getVerticalScrollBar();
 
         this.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -85,12 +95,51 @@ public class chat extends javax.swing.JFrame {
         initFont();
         ImageScaler scaler = new ImageScaler();
         scaler.scaleImage(jLabel3, "src\\main\\resources\\images\\send.png");
-        scaler.scaleImage(jLabel4, "src\\main\\resources\\images\\send.png");
 
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 12, 12));
         getUsers();
         panel.setLayout(new MigLayout("fillx"));
+        jPanel7.setVisible(false);
+    }
 
+    public void handleData(String user2UID) {
+        uid = user2UID;
+        panel.removeAll();//clean main screen Frame
+        panel.repaint();
+        panel.revalidate();
+        retrieveChat();
+        jPanel7.setVisible(true);
+    }
+
+    private void retrieveChat() {
+        user1 = FirebaseDatabase.getInstance().getReference("chat/" + new getUID().getUid() + "/" + uid);
+        user2 = FirebaseDatabase.getInstance().getReference("chat/" + uid + "/" + new getUID().getUid());
+        user1.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    //panel.removeAll();//clean main screen Frame
+                    String message = child.child("message").getValue(String.class);
+                    if (child.child("uid").getValue(String.class).equals(new getUID().getUid())) {
+                        user1 user1 = new user1(message);
+                        panel.add(user1, "wrap, w 80%, al right");
+                        panel.repaint();
+                        panel.revalidate();
+                    } else {
+                        user2 user2 = new user2(message);
+                        panel.add(user2, "wrap, w 80%");
+                        panel.repaint();
+                        panel.revalidate();
+                    }
+                    verticalScrollBar.setValue(verticalScrollBar.getMaximum() + 1);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                System.out.println("Error: " + databaseError.getMessage());
+            }
+        });
     }
 
     private void getUsers() {
@@ -99,12 +148,17 @@ public class chat extends javax.swing.JFrame {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    String email = child.child("email").getValue(String.class);
-                    matcher = pattern.matcher(email);
+                    if (!child.child("uid").getValue(String.class).equals(new getUID().getUid())) {
+                        String email = child.child("email").getValue(String.class);
+                        String uid1 = child.child("uid").getValue(String.class);
 
-                    if (matcher.find()) {
-                        String result = matcher.group(1);
-                        list.add(new users(result));
+                        matcher = pattern.matcher(email);
+
+                        if (matcher.find()) {
+                            String result = matcher.group(1);
+                            users users = new users(result, uid1);
+                            list.add(users);
+                        }
                     }
                 }
             }
@@ -144,13 +198,13 @@ public class chat extends javax.swing.JFrame {
         jPanel7 = new javax.swing.JPanel();
         jPanel9 = new RoundedPanel(12, new Color(245,245,245));
         message = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         panel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
+        setPreferredSize(new java.awt.Dimension(1016, 700));
 
         jPanel1.setLayout(new java.awt.BorderLayout());
 
@@ -299,15 +353,30 @@ public class chat extends javax.swing.JFrame {
                 messageActionPerformed(evt);
             }
         });
-
-        jLabel4.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel4.setPreferredSize(new java.awt.Dimension(25, 25));
-        jLabel3.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jLabel4.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel4MouseClicked(evt);
+        message.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                messageKeyPressed(evt);
             }
         });
+
+        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
+        jPanel9.setLayout(jPanel9Layout);
+        jPanel9Layout.setHorizontalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(message, javax.swing.GroupLayout.PREFERRED_SIZE, 734, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel9Layout.setVerticalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(message, javax.swing.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jPanel9.setOpaque(false);
 
         jLabel3.setForeground(new java.awt.Color(51, 51, 51));
         jLabel3.setPreferredSize(new java.awt.Dimension(25, 25));
@@ -318,32 +387,6 @@ public class chat extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
-        jPanel9.setLayout(jPanel9Layout);
-        jPanel9Layout.setHorizontalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(message, javax.swing.GroupLayout.PREFERRED_SIZE, 654, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(7, Short.MAX_VALUE))
-        );
-        jPanel9Layout.setVerticalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(message))
-                .addContainerGap())
-            .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-
-        jPanel9.setOpaque(false);
-
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
         jPanel7Layout.setHorizontalGroup(
@@ -351,31 +394,28 @@ public class chat extends javax.swing.JFrame {
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(43, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(13, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(7, Short.MAX_VALUE))
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel7Layout.createSequentialGroup()
+                        .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
 
         jPanel5.add(jPanel7, java.awt.BorderLayout.PAGE_END);
 
         jScrollPane3.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane3.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-        javax.swing.GroupLayout panelLayout = new javax.swing.GroupLayout(panel);
-        panel.setLayout(panelLayout);
-        panelLayout.setHorizontalGroup(
-            panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 810, Short.MAX_VALUE)
-        );
-        panelLayout.setVerticalGroup(
-            panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 614, Short.MAX_VALUE)
-        );
-
+        panel.setLayout(new javax.swing.BoxLayout(panel, javax.swing.BoxLayout.Y_AXIS));
         jScrollPane3.setViewportView(panel);
 
         jPanel5.add(jScrollPane3, java.awt.BorderLayout.CENTER);
@@ -413,26 +453,55 @@ public class chat extends javax.swing.JFrame {
 
     private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
         // TODO add your handling code here:
+        list.removeAll();//clean main screen Frame
         getUsers();
     }//GEN-LAST:event_jLabel2MouseClicked
 
     private void jLabel3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel3MouseClicked
         // TODO add your handling code here:
+        String key;
         String text = message.getText();
-        user2 user2 = new user2(text);
-        panel.add(user2, "wrap, w 80%");
+        key = user1.push().getKey();
+        v = new pushValueExisting(key);
+        m = new HashMap<>();
+        m.put("message", text);
+        m.put("uid", new getUID().getUid());
+        v.pushData("chat/" + new getUID().getUid() + "/" + uid, m);
+        key = user2.push().getKey();
+        v = new pushValueExisting(key);
+        m = new HashMap<>();
+        m.put("message", text);
+        m.put("uid", new getUID().getUid());
+        v.pushData("chat/" + uid + "/" + new getUID().getUid(), m);
+        panel.removeAll();//clean main screen Frame
+        message.setText("");
         panel.repaint();
         panel.revalidate();
     }//GEN-LAST:event_jLabel3MouseClicked
 
-    private void jLabel4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MouseClicked
+    private void messageKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_messageKeyPressed
         // TODO add your handling code here:
-        String text = message.getText();
-        user1 user1 = new user1(text);
-        panel.add(user1, "wrap, w 80%, al right");
-        panel.repaint();
-        panel.revalidate();
-    }//GEN-LAST:event_jLabel4MouseClicked
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            String key;
+            String text = message.getText();
+            key = user1.push().getKey();
+            v = new pushValueExisting(key);
+            m = new HashMap<>();
+            m.put("message", text);
+            m.put("uid", new getUID().getUid());
+            v.pushData("chat/" + new getUID().getUid() + "/" + uid, m);
+            key = user2.push().getKey();
+            v = new pushValueExisting(key);
+            m = new HashMap<>();
+            m.put("message", text);
+            m.put("uid", new getUID().getUid());
+            v.pushData("chat/" + uid + "/" + new getUID().getUid(), m);
+            panel.removeAll();//clean main screen Frame
+            message.setText("");
+            panel.repaint();
+            panel.revalidate();
+        }
+    }//GEN-LAST:event_messageKeyPressed
 
     /**
      * @param args the command line arguments
@@ -473,7 +542,6 @@ public class chat extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
