@@ -10,7 +10,6 @@ import backend.firebaseInit;
 import backend.getUID;
 import backend.pushValue;
 import backend.pushValueExisting;
-import chat.chatDetails;
 import chat.user1;
 import chat.user2;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,6 +37,7 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollBar;
 import model.users;
 import net.miginfocom.swing.MigLayout;
@@ -55,7 +55,8 @@ public class chat extends javax.swing.JFrame {
     private DatabaseReference dbRef;
     private DatabaseReference user1;
     private DatabaseReference user2;
-    private pushValueExisting v;
+    private pushValueExisting v1;
+    private pushValueExisting v2;
     boolean authh = false;
     EmailValidation validate = new EmailValidation();
     private FirebaseAuth firebaseAuth;
@@ -65,8 +66,10 @@ public class chat extends javax.swing.JFrame {
     private String regex = "^(.*?)@";
     private Pattern pattern = Pattern.compile(regex);
     private Matcher matcher;
-    public String uid;
+    private String uid;
     private JScrollBar verticalScrollBar;
+    private String email;
+    private ValueEventListener listener;
 
     public chat() {
         this.uid = uid;
@@ -100,36 +103,46 @@ public class chat extends javax.swing.JFrame {
         getUsers();
         panel.setLayout(new MigLayout("fillx"));
         jPanel7.setVisible(false);
+        jPanel14.setVisible(false);
     }
 
-    public void handleData(String user2UID) {
+    public void handleData(String user2UID, String name1) {
         uid = user2UID;
+        jLabel4.setText(name1);
         panel.removeAll();//clean main screen Frame
         panel.repaint();
         panel.revalidate();
         retrieveChat();
         jPanel7.setVisible(true);
+        jPanel14.setVisible(true);
     }
 
     private void retrieveChat() {
         user1 = FirebaseDatabase.getInstance().getReference("chat/" + new getUID().getUid() + "/" + uid);
         user2 = FirebaseDatabase.getInstance().getReference("chat/" + uid + "/" + new getUID().getUid());
-        user1.addValueEventListener(new ValueEventListener() {
+        user1.addValueEventListener(listener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
                     //panel.removeAll();//clean main screen Frame
                     String message = child.child("message").getValue(String.class);
+                    String name = child.child("name").getValue(String.class);
                     if (child.child("uid").getValue(String.class).equals(new getUID().getUid())) {
                         user1 user1 = new user1(message);
                         panel.add(user1, "wrap, w 80%, al right");
                         panel.repaint();
                         panel.revalidate();
                     } else {
-                        user2 user2 = new user2(message);
-                        panel.add(user2, "wrap, w 80%");
-                        panel.repaint();
-                        panel.revalidate();
+                        matcher = pattern.matcher(name);
+                        
+                        if (matcher.find()) {
+                            String result = matcher.group(1);
+                            user2 user2 = new user2(message);
+                            panel.add(user2, "wrap, w 80%");
+                            panel.repaint();
+                            panel.revalidate();
+                        }
+
                     }
                     verticalScrollBar.setValue(verticalScrollBar.getMaximum() + 1);
                 }
@@ -149,7 +162,7 @@ public class chat extends javax.swing.JFrame {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
                     if (!child.child("uid").getValue(String.class).equals(new getUID().getUid())) {
-                        String email = child.child("email").getValue(String.class);
+                        email = child.child("email").getValue(String.class);
                         String uid1 = child.child("uid").getValue(String.class);
 
                         matcher = pattern.matcher(email);
@@ -199,6 +212,9 @@ public class chat extends javax.swing.JFrame {
         jPanel9 = new RoundedPanel(12, new Color(245,245,245));
         message = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
+        jPanel13 = new javax.swing.JPanel();
+        jPanel14 = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         panel = new javax.swing.JPanel();
 
@@ -328,7 +344,6 @@ public class chat extends javax.swing.JFrame {
         jPanel12Layout.setVerticalGroup(
             jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel12Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 620, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
@@ -396,7 +411,7 @@ public class chat extends javax.swing.JFrame {
                 .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -412,13 +427,44 @@ public class chat extends javax.swing.JFrame {
 
         jPanel5.add(jPanel7, java.awt.BorderLayout.PAGE_END);
 
+        jPanel13.setLayout(new java.awt.BorderLayout());
+
+        jPanel14.setBackground(new java.awt.Color(250, 250, 250));
+        jPanel14.setPreferredSize(new java.awt.Dimension(0, 51));
+
+        jLabel4.setForeground(new java.awt.Color(58, 58, 58));
+        jLabel4.setText("jLabel4");
+
+        javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
+        jPanel14.setLayout(jPanel14Layout);
+        jPanel14Layout.setHorizontalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
+                .addContainerGap(766, Short.MAX_VALUE)
+                .addComponent(jLabel4)
+                .addContainerGap())
+        );
+        jPanel14Layout.setVerticalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
+                .addContainerGap(29, Short.MAX_VALUE)
+                .addComponent(jLabel4)
+                .addContainerGap())
+        );
+
+        jPanel13.add(jPanel14, java.awt.BorderLayout.PAGE_START);
+
+        jScrollPane3.setBackground(new java.awt.Color(250, 250, 250));
+        jScrollPane3.setForeground(new java.awt.Color(255, 255, 255));
         jScrollPane3.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane3.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         panel.setLayout(new javax.swing.BoxLayout(panel, javax.swing.BoxLayout.Y_AXIS));
         jScrollPane3.setViewportView(panel);
 
-        jPanel5.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+        jPanel13.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+
+        jPanel5.add(jPanel13, java.awt.BorderLayout.CENTER);
 
         jPanel1.add(jPanel5, java.awt.BorderLayout.CENTER);
 
@@ -459,47 +505,55 @@ public class chat extends javax.swing.JFrame {
 
     private void jLabel3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel3MouseClicked
         // TODO add your handling code here:
-        String key;
-        String text = message.getText();
-        key = user1.push().getKey();
-        v = new pushValueExisting(key);
-        m = new HashMap<>();
-        m.put("message", text);
-        m.put("uid", new getUID().getUid());
-        v.pushData("chat/" + new getUID().getUid() + "/" + uid, m);
-        key = user2.push().getKey();
-        v = new pushValueExisting(key);
-        m = new HashMap<>();
-        m.put("message", text);
-        m.put("uid", new getUID().getUid());
-        v.pushData("chat/" + uid + "/" + new getUID().getUid(), m);
-        panel.removeAll();//clean main screen Frame
-        message.setText("");
-        panel.repaint();
-        panel.revalidate();
+        if (message.getText().equals("")) {
+            JOptionPane.showMessageDialog(rootPane, "Field is empty");
+        } else {
+            String key1;
+            String key2;
+            String text = message.getText();
+            key1 = user1.push().getKey();
+            key2 = user2.push().getKey();
+
+            v1 = new pushValueExisting(key1);
+            v2 = new pushValueExisting(key2);
+            m = new HashMap<>();
+            m.put("message", text);
+            m.put("uid", new getUID().getUid());
+            m.put("name", email);
+            v1.pushData("chat/" + new getUID().getUid() + "/" + uid, m);
+            v2.pushData("chat/" + uid + "/" + new getUID().getUid(), m);
+            panel.removeAll();//clean main screen Frame
+            message.setText("");
+            panel.repaint();
+            panel.revalidate();
+        }
     }//GEN-LAST:event_jLabel3MouseClicked
 
     private void messageKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_messageKeyPressed
         // TODO add your handling code here:
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            String key;
-            String text = message.getText();
-            key = user1.push().getKey();
-            v = new pushValueExisting(key);
-            m = new HashMap<>();
-            m.put("message", text);
-            m.put("uid", new getUID().getUid());
-            v.pushData("chat/" + new getUID().getUid() + "/" + uid, m);
-            key = user2.push().getKey();
-            v = new pushValueExisting(key);
-            m = new HashMap<>();
-            m.put("message", text);
-            m.put("uid", new getUID().getUid());
-            v.pushData("chat/" + uid + "/" + new getUID().getUid(), m);
-            panel.removeAll();//clean main screen Frame
-            message.setText("");
-            panel.repaint();
-            panel.revalidate();
+            if (message.getText().equals("")) {
+                JOptionPane.showMessageDialog(rootPane, "Field is empty");
+            } else {
+                String key1;
+                String key2;
+                String text = message.getText();
+                key1 = user1.push().getKey();
+                key2 = user2.push().getKey();
+
+                v1 = new pushValueExisting(key1);
+                v2 = new pushValueExisting(key2);
+                m = new HashMap<>();
+                m.put("message", text);
+                m.put("uid", new getUID().getUid());
+                m.put("name", email);
+                v1.pushData("chat/" + new getUID().getUid() + "/" + uid, m);
+                v2.pushData("chat/" + uid + "/" + new getUID().getUid(), m);
+                panel.removeAll();//clean main screen Frame
+                message.setText("");
+                panel.repaint();
+                panel.revalidate();
+            }
         }
     }//GEN-LAST:event_messageKeyPressed
 
@@ -542,12 +596,15 @@ public class chat extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
+    private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -567,6 +624,7 @@ public class chat extends javax.swing.JFrame {
         jLabel1.setFont(new Font("Montserrat Regular", Font.BOLD, 16));
         message.setFont(new Font("Montserrat Regular", Font.PLAIN, 12));
         jLabel2.setFont(new Font("Montserrat Regular", Font.BOLD, 24));
+        jLabel4.setFont(new Font("Montserrat Regular", Font.BOLD, 24));
 
     }
 }

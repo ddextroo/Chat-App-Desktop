@@ -338,6 +338,7 @@ public class auth extends javax.swing.JFrame {
                             }
                         } catch (FirebaseAuthException ex) {
                             Logger.getLogger(auth.class.getName()).log(Level.SEVERE, null, ex);
+                            JOptionPane.showMessageDialog(null, "Error: Not registered", "Error", ERROR_MESSAGE);
                         }
                     }
 
@@ -362,7 +363,7 @@ public class auth extends javax.swing.JFrame {
                 try {
                     boolean authenticated = false;
                     authenticated = new signup(email_address, password).signUp();
-                        
+
                     if (authenticated) {
                         email.setText("");
                     }

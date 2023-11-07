@@ -59,7 +59,6 @@ public class user1 extends javax.swing.JLayeredPane {
 
         text1.setEditable(false);
         text1.setBackground(new java.awt.Color(34, 167, 240));
-        text1.setBorder(null);
         text1.setForeground(new java.awt.Color(255, 255, 255));
 
         setLayer(text1, javax.swing.JLayeredPane.DEFAULT_LAYER);

@@ -4,15 +4,8 @@
  */
 package model;
 
-import backend.getUID;
-import chat.chatDetails;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import design.fontInit;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -32,6 +25,7 @@ public class users extends javax.swing.JPanel {
 
     public users(String name, String uid) {
         this.uid = uid;
+        this.name = name;
         initComponents();
         jLabel1.setText(name);
         new fontInit().initialize();
@@ -44,7 +38,7 @@ public class users extends javax.swing.JPanel {
         jPanel1.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                ((chat) SwingUtilities.getWindowAncestor(jPanel1)).handleData(uid);
+                ((chat) SwingUtilities.getWindowAncestor(jPanel1)).handleData(uid, name);
             }
 
             @Override

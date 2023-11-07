@@ -12,12 +12,10 @@ import pages.auth;
 public class App {
 
     public String getGreeting() {
-        return "welkam back ah";
+        return "";
     }
 
     public static void main(String[] args) {
-        HashMap<String, Object> m;
-        pushValueExisting v;
        // System.out.println(new App().getGreeting());
         FlatLightLaf.install();
         FlatLightLaf.setup();
